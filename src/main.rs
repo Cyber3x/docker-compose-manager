@@ -28,11 +28,16 @@ struct Cli {
 #[derive(Subcommand)]
 enum Cmd {
     /// Save a project (path to compose file or directory)
-    Add { name: String, path: String },
+    Add {
+        name: String,
+        path: String,
+    },
 
     /// Remove a saved project
     #[command(alias = "rm")]
-    Remove { name: String },
+    Remove {
+        name: String,
+    },
 
     /// List all saved projects
     #[command(alias = "ls")]
@@ -101,7 +106,8 @@ fn config_path() -> Result<PathBuf> {
     let base = if let Ok(xdg) = env::var("XDG_CONFIG_HOME") {
         PathBuf::from(xdg)
     } else {
-        let home = env::var("HOME").context("$HOME is not set — cannot locate config directory")?;
+        let home = env::var("HOME")
+            .context("$HOME is not set — cannot locate config directory")?;
         PathBuf::from(home).join(".config")
     };
     Ok(base.join("dcm").join("projects"))
@@ -133,15 +139,15 @@ fn load_projects() -> Result<HashMap<String, String>> {
 fn save_projects(projects: &HashMap<String, String>) -> Result<()> {
     let path = config_path()?;
     if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).context("could not create config directory")?;
+        fs::create_dir_all(parent)
+            .context("could not create config directory")?;
     }
-    let mut lines: Vec<String> = projects
-        .iter()
-        .map(|(name, loc)| format!("{name}={loc}"))
-        .collect();
+    let mut lines: Vec<String> =
+        projects.iter().map(|(name, loc)| format!("{name}={loc}")).collect();
     lines.sort();
     let tmp = path.with_extension("tmp");
-    fs::write(&tmp, lines.join("\n") + "\n").context("could not write config file")?;
+    fs::write(&tmp, lines.join("\n") + "\n")
+        .context("could not write config file")?;
     fs::rename(&tmp, &path).context("could not save config file")?;
     Ok(())
 }
@@ -293,7 +299,9 @@ fn cmd_remove(name: &str) -> Result<()> {
         save_projects(&projects)?;
         println!("{} {}", "removed:".red().bold(), name.cyan());
     } else {
-        bail!("no project named '{name}' — run `dcm list` to see saved projects");
+        bail!(
+            "no project named '{name}' — run `dcm list` to see saved projects"
+        );
     }
     Ok(())
 }
@@ -312,18 +320,10 @@ fn cmd_list() -> Result<()> {
     let mut table = Table::new();
     table.load_preset(UTF8_FULL);
     table.set_header(vec![
-        Cell::new("NAME")
-            .add_attribute(Attribute::Bold)
-            .fg(Color::Cyan),
-        Cell::new("PATH")
-            .add_attribute(Attribute::Bold)
-            .fg(Color::Cyan),
-        Cell::new("FILE")
-            .add_attribute(Attribute::Bold)
-            .fg(Color::Cyan),
-        Cell::new("RUNNING")
-            .add_attribute(Attribute::Bold)
-            .fg(Color::Cyan),
+        Cell::new("NAME").add_attribute(Attribute::Bold).fg(Color::Cyan),
+        Cell::new("PATH").add_attribute(Attribute::Bold).fg(Color::Cyan),
+        Cell::new("FILE").add_attribute(Attribute::Bold).fg(Color::Cyan),
+        Cell::new("RUNNING").add_attribute(Attribute::Bold).fg(Color::Cyan),
     ]);
 
     let mut sorted: Vec<(String, String)> = projects.into_iter().collect();
@@ -371,11 +371,7 @@ fn cmd_list() -> Result<()> {
     }
 
     println!("{table}");
-    println!(
-        "{} {}",
-        "config:".dimmed(),
-        cfg.display().to_string().dimmed()
-    );
+    println!("{} {}", "config:".dimmed(), cfg.display().to_string().dimmed());
     Ok(())
 }
 
@@ -383,7 +379,9 @@ fn cmd_status(name: &str) -> Result<()> {
     validate_name(name)?;
     let projects = load_projects()?;
     let path = projects.get(name).with_context(|| {
-        format!("no project named '{name}' — run `dcm list` to see saved projects")
+        format!(
+            "no project named '{name}' — run `dcm list` to see saved projects"
+        )
     })?;
 
     if !Path::new(path).exists() {
@@ -422,15 +420,9 @@ fn cmd_status(name: &str) -> Result<()> {
     let mut table = Table::new();
     table.load_preset(UTF8_FULL);
     table.set_header(vec![
-        Cell::new("SERVICE")
-            .add_attribute(Attribute::Bold)
-            .fg(Color::Cyan),
-        Cell::new("STATE")
-            .add_attribute(Attribute::Bold)
-            .fg(Color::Cyan),
-        Cell::new("STATUS")
-            .add_attribute(Attribute::Bold)
-            .fg(Color::Cyan),
+        Cell::new("SERVICE").add_attribute(Attribute::Bold).fg(Color::Cyan),
+        Cell::new("STATE").add_attribute(Attribute::Bold).fg(Color::Cyan),
+        Cell::new("STATUS").add_attribute(Attribute::Bold).fg(Color::Cyan),
     ]);
 
     for line in lines {
@@ -466,7 +458,9 @@ fn cmd_rename(old: &str, new: &str) -> Result<()> {
     let mut projects = load_projects()?;
 
     if !projects.contains_key(old) {
-        bail!("no project named '{old}' — run `dcm list` to see saved projects");
+        bail!(
+            "no project named '{old}' — run `dcm list` to see saved projects"
+        );
     }
     if projects.contains_key(new) {
         bail!("a project named '{new}' already exists");
@@ -475,12 +469,7 @@ fn cmd_rename(old: &str, new: &str) -> Result<()> {
     let path = projects.remove(old).unwrap();
     projects.insert(new.to_string(), path);
     save_projects(&projects)?;
-    println!(
-        "{} {} → {}",
-        "renamed:".green().bold(),
-        old.cyan(),
-        new.cyan()
-    );
+    println!("{} {} → {}", "renamed:".green().bold(), old.cyan(), new.cyan());
     Ok(())
 }
 
@@ -488,7 +477,9 @@ fn run_compose(name: &str, subcommand: &str, extra: &[String]) -> Result<()> {
     validate_name(name)?;
     let projects = load_projects()?;
     let path = projects.get(name).with_context(|| {
-        format!("no project named '{name}' — run `dcm list` to see saved projects")
+        format!(
+            "no project named '{name}' — run `dcm list` to see saved projects"
+        )
     })?;
 
     if !Path::new(path).exists() {
@@ -526,26 +517,47 @@ fn main() {
     let cli = Cli::parse();
 
     let result = match cli.command {
-        Cmd::Add { name, path } => cmd_add(&name, &path),
-        Cmd::Remove { name } => cmd_remove(&name),
+        Cmd::Add {
+            name,
+            path,
+        } => cmd_add(&name, &path),
+        Cmd::Remove {
+            name,
+        } => cmd_remove(&name),
         Cmd::List => cmd_list(),
-        Cmd::Up { name, extra } => run_compose(&name, "up", &extra),
-        Cmd::Down { name, extra } => run_compose(&name, "down", &extra),
+        Cmd::Up {
+            name,
+            extra,
+        } => run_compose(&name, "up", &extra),
+        Cmd::Down {
+            name,
+            extra,
+        } => run_compose(&name, "down", &extra),
         Cmd::Run {
             name,
             subcommand,
             extra,
         } => run_compose(&name, &subcommand, &extra),
-        Cmd::Status { name } => cmd_status(&name),
-        Cmd::Rename { old, new } => cmd_rename(&old, &new),
-        Cmd::Logs { name, mut extra } => {
+        Cmd::Status {
+            name,
+        } => cmd_status(&name),
+        Cmd::Rename {
+            old,
+            new,
+        } => cmd_rename(&old, &new),
+        Cmd::Logs {
+            name,
+            mut extra,
+        } => {
             extra.insert(0, "-f".to_string());
             run_compose(&name, "logs", &extra)
-        }
-        Cmd::Completions { shell } => {
+        },
+        Cmd::Completions {
+            shell,
+        } => {
             generate(shell, &mut Cli::command(), "dcm", &mut io::stdout());
             Ok(())
-        }
+        },
     };
 
     if let Err(e) = result {
