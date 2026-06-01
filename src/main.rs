@@ -5,7 +5,7 @@ use comfy_table::{Attribute, Cell, Color, Table, presets::UTF8_FULL};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-use std::io::{self, Write};
+use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, exit};
 
@@ -455,6 +455,10 @@ fn run_compose(name: &str, subcommand: &str, extra: &[String]) {
 // ---------------------------------------------------------------------------
 
 fn main() {
+    if env::var("NO_COLOR").is_ok() || !io::stdout().is_terminal() {
+        colored::control::set_override(false);
+    }
+
     let cli = Cli::parse();
 
     match cli.command {
