@@ -100,7 +100,7 @@ fn save_projects(projects: &HashMap<String, String>) {
     let path = config_path();
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).unwrap_or_else(|e| {
-            eprintln!("error: could not create config directory: {e}");
+            eprintln!("{} could not create config directory: {e}", "error:".red().bold());
             exit(1);
         });
     }
@@ -109,8 +109,13 @@ fn save_projects(projects: &HashMap<String, String>) {
         .map(|(name, loc)| format!("{name}={loc}"))
         .collect();
     lines.sort();
-    fs::write(&path, lines.join("\n") + "\n").unwrap_or_else(|e| {
-        eprintln!("error: could not write config file: {e}");
+    let tmp = path.with_extension("tmp");
+    fs::write(&tmp, lines.join("\n") + "\n").unwrap_or_else(|e| {
+        eprintln!("{} could not write config file: {e}", "error:".red().bold());
+        exit(1);
+    });
+    fs::rename(&tmp, &path).unwrap_or_else(|e| {
+        eprintln!("{} could not save config file: {e}", "error:".red().bold());
         exit(1);
     });
 }
