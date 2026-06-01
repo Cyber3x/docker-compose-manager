@@ -46,6 +46,14 @@ dcm completions fish | source         # fish
 
 Projects are stored in `$XDG_CONFIG_HOME/dcm/projects` (default: `~/.config/dcm/projects`).
 
+To use a custom location — useful for syncing across machines via Dropbox or Syncthing — set `DCM_DB`:
+
+```sh
+export DCM_DB=~/Dropbox/dcm-projects
+```
+
+Priority order: `DCM_DB` → `$XDG_CONFIG_HOME/dcm/projects` → `~/.config/dcm/projects`.
+
 ## License
 
 MIT

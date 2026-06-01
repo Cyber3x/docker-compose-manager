@@ -103,6 +103,9 @@ enum Cmd {
 // ---------------------------------------------------------------------------
 
 fn config_path() -> Result<PathBuf> {
+    if let Ok(p) = env::var("DCM_DB") {
+        return Ok(PathBuf::from(p));
+    }
     let base = if let Ok(xdg) = env::var("XDG_CONFIG_HOME") {
         PathBuf::from(xdg)
     } else {
