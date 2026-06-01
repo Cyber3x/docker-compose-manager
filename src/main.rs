@@ -259,6 +259,10 @@ fn running_status(path: &str) -> RunState {
         return RunState::Unknown;
     };
 
+    if !output.status.success() {
+        return RunState::Unknown;
+    }
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     let states: Vec<&str> = stdout.lines().collect();
 
