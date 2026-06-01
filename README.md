@@ -1,5 +1,7 @@
 # dcm — Docker Compose Manager
 
+> This tool was largely generated with the help of LLMs.
+
 Tired of `cd`-ing to the right directory just to run `docker compose up`? `dcm` lets you save your compose projects under short names and manage them from anywhere.
 
 ## Install
@@ -58,6 +60,3 @@ Priority order: `DCM_DB` → `$XDG_CONFIG_HOME/dcm/projects` → `~/.config/dcm/
 
 MIT
 
----
-
-> This tool was largely generated with the help of LLMs.
