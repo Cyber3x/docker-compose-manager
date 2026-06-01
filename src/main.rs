@@ -477,8 +477,14 @@ fn main() {
         Cmd::Run { name, subcommand, extra } => run_compose(&name, &subcommand, &extra),
         Cmd::Status { name }                 => cmd_status(&name),
         Cmd::Rename { old, new }             => cmd_rename(&old, &new),
-        Cmd::Logs { name, mut extra }        => { extra.insert(0, "-f".to_string()); run_compose(&name, "logs", &extra) },
-        Cmd::Completions { shell }           => { generate(shell, &mut Cli::command(), "dcm", &mut io::stdout()); Ok(()) },
+        Cmd::Logs { name, mut extra } => {
+            extra.insert(0, "-f".to_string());
+            run_compose(&name, "logs", &extra)
+        },
+        Cmd::Completions { shell } => {
+            generate(shell, &mut Cli::command(), "dcm", &mut io::stdout());
+            Ok(())
+        },
     };
 
     if let Err(e) = result {
