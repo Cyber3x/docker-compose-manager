@@ -76,7 +76,10 @@ enum Cmd {
 // ---------------------------------------------------------------------------
 
 fn config_path() -> PathBuf {
-    let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    let home = env::var("HOME").unwrap_or_else(|_| {
+        eprintln!("{} $HOME is not set — cannot locate config directory", "error:".red().bold());
+        exit(1);
+    });
     Path::new(&home).join(".config").join("dcm").join("projects")
 }
 
