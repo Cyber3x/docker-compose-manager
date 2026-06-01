@@ -2,6 +2,12 @@
 
 Tired of `cd`-ing to the right directory just to run `docker compose up`? `dcm` lets you save your compose projects under short names and manage them from anywhere.
 
+## Install
+
+```sh
+cargo install --git https://github.com/youruser/docker-compose-manager
+```
+
 ## Usage
 
 ```sh
@@ -18,10 +24,24 @@ dcm down myapp
 dcm status myapp                      # per-service table
 dcm list                              # all projects + running state
 
-# Run any compose subcommand
-dcm run myapp logs -f
-dcm run myapp exec web sh
+# Follow logs
+dcm logs myapp                        # all services
+dcm logs myapp web                    # specific service
 
-# Remove a saved project
-dcm rm myapp
+# Run any compose subcommand
+dcm run myapp exec web sh
+dcm run myapp ps
+
+# Manage saved projects
+dcm rename myapp myapp-v2             # rename (alias: mv)
+dcm rm myapp                          # remove
+
+# Shell completions
+eval "$(dcm completions bash)"        # bash
+eval "$(dcm completions zsh)"         # zsh
+dcm completions fish | source         # fish
 ```
+
+## Config
+
+Projects are stored in `$XDG_CONFIG_HOME/dcm/projects` (default: `~/.config/dcm/projects`).
