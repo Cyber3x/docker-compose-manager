@@ -1,7 +1,15 @@
 [package]
 name = "dcm"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
+description = "Docker Compose Manager — save and run named compose projects from anywhere"
+authors = ["cyber3x <neven.lukic8@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/Cyber3x/docker-compose-manager"
+homepage = "https://github.com/Cyber3x/docker-compose-manager"
+keywords = ["docker", "compose", "cli", "devtools"]
+categories = ["command-line-utilities", "development-tools"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1"
