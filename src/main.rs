@@ -452,6 +452,7 @@ fn run_compose(name: &str, subcommand: &str, extra: &[String]) -> Result<()> {
         .status()
         .context("failed to launch docker")?;
 
+    // intentional: forward docker's exit code directly to the caller
     exit(status.code().unwrap_or(1));
 }
 
