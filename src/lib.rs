@@ -133,15 +133,21 @@ pub fn cmd_add(name: &str, raw_path: &str) -> Result<()> {
     validate_name(name)?;
 
     let given = Path::new(raw_path);
-    let absolute = if raw_path == "." {
-        env::current_dir().context("could not read current directory")?
-    } else if given.is_absolute() {
-        given.to_path_buf()
-    } else {
+    let joined = if raw_path == "." || given.is_relative() {
         env::current_dir()
             .context("could not read current directory")?
             .join(given)
+    } else {
+        given.to_path_buf()
     };
+    let absolute = joined
+        .components()
+        .fold(PathBuf::new(), |mut acc, c| {
+            if c != std::path::Component::CurDir {
+                acc.push(c);
+            }
+            acc
+        });
 
     let compose_path = if absolute.is_dir() {
         let candidates = [
