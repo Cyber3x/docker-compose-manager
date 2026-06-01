@@ -14,33 +14,63 @@ cargo install --git https://github.com/Cyber3x/docker-compose-manager
 
 ## Usage
 
+**Save a project**
+
 ```sh
-# Save a project
 dcm add myapp /path/to/myapp          # explicit path
 dcm add myapp .                       # current directory
+```
 
-# Start / stop
+![Adding first project](assets/adding_first_project_myapp.png)
+![Adding second project](assets/adding_second_project_database.png)
+
+**Start / stop**
+
+```sh
 dcm up myapp
 dcm up myapp -d                       # extra flags pass through
 dcm down myapp
+```
 
-# Check status
+![dcm up myapp](assets/dcm_up_myapp.png)
+![dcm down myapp](assets/dcm_down_myapp.png)
+
+**Check status**
+
+```sh
 dcm status myapp                      # per-service table
 dcm list                              # all projects + running state
+```
 
-# Follow logs
+![dcm status myapp](assets/dcm_status_myapp.png)
+![dcm list](assets/list_witout_any_running_projects.png)
+
+**Follow logs**
+
+```sh
 dcm logs myapp                        # all services
 dcm logs myapp web                    # specific service
+```
 
-# Run any compose subcommand
+![dcm logs database](assets/dcm_database_logs_example.png)
+
+**Run any compose subcommand**
+
+```sh
 dcm run myapp exec web sh
 dcm run myapp ps
+```
 
-# Manage saved projects
+**Manage saved projects**
+
+```sh
 dcm rename myapp myapp-v2             # rename (alias: mv)
 dcm rm myapp                          # remove
+```
 
-# Shell completions
+**Shell completions**
+
+```sh
 eval "$(dcm completions bash)"        # bash
 eval "$(dcm completions zsh)"         # zsh
 dcm completions fish | source         # fish
