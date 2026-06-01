@@ -124,7 +124,15 @@ fn save_projects(projects: &HashMap<String, String>) {
 // Commands
 // ---------------------------------------------------------------------------
 
+fn validate_name(name: &str) {
+    if name.is_empty() || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+        eprintln!("{} invalid project name '{}' — only letters, digits, _ and - are allowed", "error:".red().bold(), name.cyan());
+        exit(1);
+    }
+}
+
 fn cmd_add(name: &str, raw_path: &str) {
+    validate_name(name);
     let given = Path::new(raw_path);
     let absolute = if raw_path == "." {
         env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
@@ -177,6 +185,7 @@ fn cmd_add(name: &str, raw_path: &str) {
 }
 
 fn cmd_remove(name: &str) {
+    validate_name(name);
     let mut projects = load_projects();
     if projects.remove(name).is_some() {
         save_projects(&projects);
@@ -259,6 +268,7 @@ fn cmd_list() {
 }
 
 fn cmd_status(name: &str) {
+    validate_name(name);
     let projects = load_projects();
     let path = projects.get(name).unwrap_or_else(|| {
         eprintln!("{} no project named '{}'", "error:".red().bold(), name.cyan());
@@ -331,6 +341,7 @@ fn cmd_status(name: &str) {
 }
 
 fn run_compose(name: &str, subcommand: &str, extra: &[String]) {
+    validate_name(name);
     let projects = load_projects();
     let path = projects.get(name).unwrap_or_else(|| {
         eprintln!("{} no project named '{}'", "error:".red().bold(), name.cyan());
