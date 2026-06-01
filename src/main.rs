@@ -148,6 +148,65 @@ fn save_projects(projects: &HashMap<String, String>) -> Result<()> {
 }
 
 // ---------------------------------------------------------------------------
+// Docker run state
+// ---------------------------------------------------------------------------
+
+enum RunState {
+    Running(usize),
+    Partial(usize, usize),
+    Stopped,
+    Unknown,
+}
+
+impl RunState {
+    fn label(&self) -> String {
+        match self {
+            Self::Running(n)        => format!("running ({n})"),
+            Self::Partial(n, total) => format!("partial ({n}/{total})"),
+            Self::Stopped           => "stopped".to_string(),
+            Self::Unknown           => "unknown".to_string(),
+        }
+    }
+
+    fn color(&self) -> Color {
+        match self {
+            Self::Running(_)              => Color::Green,
+            Self::Partial(..)             => Color::Yellow,
+            Self::Stopped | Self::Unknown => Color::DarkGrey,
+        }
+    }
+}
+
+fn running_status(path: &str) -> RunState {
+    let Ok(output) = Command::new("docker")
+        .args(["compose", "-f", path, "ps", "--format", "{{.State}}"])
+        .output()
+    else {
+        return RunState::Unknown;
+    };
+
+    if !output.status.success() {
+        return RunState::Unknown;
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let states: Vec<&str> = stdout.lines().collect();
+
+    if states.is_empty() {
+        return RunState::Stopped;
+    }
+
+    let total = states.len();
+    let running = states.iter().filter(|&&s| s == "running").count();
+
+    match running {
+        0               => RunState::Stopped,
+        n if n == total => RunState::Running(n),
+        n               => RunState::Partial(n, total),
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Commands
 // ---------------------------------------------------------------------------
 
@@ -223,61 +282,6 @@ fn cmd_remove(name: &str) -> Result<()> {
         bail!("no project named '{name}' — run `dcm list` to see saved projects");
     }
     Ok(())
-}
-
-enum RunState {
-    Running(usize),
-    Partial(usize, usize),
-    Stopped,
-    Unknown,
-}
-
-impl RunState {
-    fn label(&self) -> String {
-        match self {
-            Self::Running(n)        => format!("running ({n})"),
-            Self::Partial(n, total) => format!("partial ({n}/{total})"),
-            Self::Stopped           => "stopped".to_string(),
-            Self::Unknown           => "unknown".to_string(),
-        }
-    }
-
-    fn color(&self) -> Color {
-        match self {
-            Self::Running(_)              => Color::Green,
-            Self::Partial(..)             => Color::Yellow,
-            Self::Stopped | Self::Unknown => Color::DarkGrey,
-        }
-    }
-}
-
-fn running_status(path: &str) -> RunState {
-    let Ok(output) = Command::new("docker")
-        .args(["compose", "-f", path, "ps", "--format", "{{.State}}"])
-        .output()
-    else {
-        return RunState::Unknown;
-    };
-
-    if !output.status.success() {
-        return RunState::Unknown;
-    }
-
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let states: Vec<&str> = stdout.lines().collect();
-
-    if states.is_empty() {
-        return RunState::Stopped;
-    }
-
-    let total = states.len();
-    let running = states.iter().filter(|&&s| s == "running").count();
-
-    match running {
-        0               => RunState::Stopped,
-        n if n == total => RunState::Running(n),
-        n               => RunState::Partial(n, total),
-    }
 }
 
 fn cmd_list() -> Result<()> {
