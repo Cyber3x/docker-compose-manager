@@ -9,7 +9,7 @@ use std::process::exit;
 #[derive(Parser)]
 #[command(
     name = "dcm",
-    about = "Docker Compose Manager — save and run named compose projects",
+    about = "Docker Compose Manager - save and run named compose projects",
     version
 )]
 struct Cli {
@@ -55,24 +55,19 @@ enum Cmd {
     /// Show running status of a saved project's services
     #[command(alias = "ps")]
     Status {
-        /// Name of the project
         name: String,
     },
 
     /// Rename a saved project
     #[command(alias = "mv")]
     Rename {
-        /// Current name
         old: String,
-        /// New name
         new: String,
     },
 
     /// Follow logs for a saved project (`docker compose logs -f`)
     Logs {
-        /// Name of the project
         name: String,
-        /// Extra arguments forwarded to `docker compose logs`
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         extra: Vec<String>,
     },
@@ -80,7 +75,6 @@ enum Cmd {
     /// Print shell completion script
     #[command(hide = true)]
     Completions {
-        /// Shell to generate completions for
         shell: Shell,
     },
 }

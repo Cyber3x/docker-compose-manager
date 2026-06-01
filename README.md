@@ -59,4 +59,3 @@ Priority order: `DCM_DB` → `$XDG_CONFIG_HOME/dcm/projects` → `~/.config/dcm/
 ## License
 
 MIT
-
