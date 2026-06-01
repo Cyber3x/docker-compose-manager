@@ -78,6 +78,15 @@ enum Cmd {
         /// New name
         new: String,
     },
+
+    /// Follow logs for a saved project (`docker compose logs -f`)
+    Logs {
+        /// Name of the project
+        name: String,
+        /// Extra arguments forwarded to `docker compose logs`
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        extra: Vec<String>,
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -444,5 +453,10 @@ fn main() {
         Cmd::Run { name, subcommand, extra } => run_compose(&name, &subcommand, &extra),
         Cmd::Status { name } => cmd_status(&name),
         Cmd::Rename { old, new } => cmd_rename(&old, &new),
+        Cmd::Logs { name, extra } => {
+            let mut args = vec!["-f".to_string()];
+            args.extend(extra);
+            run_compose(&name, "logs", &args);
+        },
     }
 }
