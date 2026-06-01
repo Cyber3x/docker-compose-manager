@@ -86,13 +86,15 @@ fn config_path() -> PathBuf {
 fn load_projects() -> HashMap<String, String> {
     let mut map = HashMap::new();
     if let Ok(contents) = fs::read_to_string(config_path()) {
-        for line in contents.lines() {
+        for (i, line) in contents.lines().enumerate() {
             let line = line.trim();
             if line.is_empty() || line.starts_with('#') {
                 continue;
             }
             if let Some((name, loc)) = line.split_once('=') {
                 map.insert(name.trim().to_string(), loc.trim().to_string());
+            } else {
+                eprintln!("{} malformed config line {}: {:?}", "warning:".yellow().bold(), i + 1, line);
             }
         }
     }
