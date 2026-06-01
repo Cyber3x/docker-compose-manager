@@ -99,8 +99,7 @@ fn main() {
         } => run_compose(&name, &subcommand, &extra),
         Cmd::Status { name } => cmd_status(&name),
         Cmd::Rename { old, new } => cmd_rename(&old, &new),
-        Cmd::Logs { name, mut extra } => {
-            extra.insert(0, "-f".to_string());
+        Cmd::Logs { name, extra } => {
             run_compose(&name, "logs", &extra)
         },
         Cmd::Completions { shell } => {
