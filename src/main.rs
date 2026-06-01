@@ -311,7 +311,9 @@ fn cmd_list() -> Result<()> {
         .collect();
 
     for handle in handles {
-        let (name, path, file_exists, run) = handle.join().unwrap();
+        let Ok((name, path, file_exists, run)) = handle.join() else {
+            continue;
+        };
         let (file_cell, path_cell, run_cell) = if file_exists {
             let state = run.unwrap();
             (
