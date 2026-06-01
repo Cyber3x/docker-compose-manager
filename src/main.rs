@@ -1,7 +1,7 @@
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{Shell, generate};
 use colored::Colorize;
-use dcm::{cmd_add, cmd_list, cmd_remove, cmd_rename, cmd_status, run_compose};
+use dcm::{cmd_add, cmd_list, cmd_remove, cmd_remove_all, cmd_rename, cmd_status, run_compose};
 use std::env;
 use std::io::{self, IsTerminal};
 use std::process::exit;
@@ -22,9 +22,14 @@ enum Cmd {
     /// Save a project (path to compose file or directory)
     Add { name: String, path: String },
 
-    /// Remove a saved project (use '*' to remove all)
+    /// Remove a saved project
     #[command(visible_alias = "rm")]
-    Remove { name: String },
+    Remove {
+        name: Option<String>,
+        /// Remove all saved projects
+        #[arg(long, short = 'a')]
+        all: bool,
+    },
 
     /// List all saved projects
     #[command(visible_alias = "ls")]
@@ -88,7 +93,16 @@ fn main() {
 
     let result = match cli.command {
         Cmd::Add { name, path } => cmd_add(&name, &path),
-        Cmd::Remove { name } => cmd_remove(&name),
+        Cmd::Remove { name, all } => {
+            if all {
+                cmd_remove_all()
+            } else if let Some(name) = name {
+                cmd_remove(&name)
+            } else {
+                eprintln!("{} specify a project name or pass --all", "error:".red().bold());
+                exit(1);
+            }
+        }
         Cmd::List => cmd_list(),
         Cmd::Up { name, extra } => run_compose(&name, "up", &extra),
         Cmd::Down { name, extra } => run_compose(&name, "down", &extra),

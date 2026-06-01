@@ -199,9 +199,6 @@ pub fn cmd_add(name: &str, raw_path: &str) -> Result<()> {
 }
 
 pub fn cmd_remove(name: &str) -> Result<()> {
-    if name == "*" {
-        return cmd_remove_all();
-    }
     validate_name(name)?;
     let mut projects = load_projects()?;
     if projects.remove(name).is_some() {
@@ -213,7 +210,7 @@ pub fn cmd_remove(name: &str) -> Result<()> {
     Ok(())
 }
 
-fn cmd_remove_all() -> Result<()> {
+pub fn cmd_remove_all() -> Result<()> {
     let mut projects = load_projects()?;
     if projects.is_empty() {
         println!("no projects saved.");
