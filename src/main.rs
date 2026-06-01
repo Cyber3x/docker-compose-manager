@@ -232,29 +232,54 @@ fn cmd_remove(name: &str) {
     }
 }
 
-fn running_status(path: &str) -> (String, Color) {
-    let output = Command::new("docker")
-        .args(["compose", "-f", path, "ps", "--format", "{{.State}}"])
-        .output();
+enum RunState {
+    Running(usize),
+    Partial(usize, usize),
+    Stopped,
+    Unknown,
+}
 
-    let Ok(output) = output else {
-        return ("unknown".to_string(), Color::DarkGrey);
+impl RunState {
+    fn label(&self) -> String {
+        match self {
+            Self::Running(n)        => format!("running ({n})"),
+            Self::Partial(n, total) => format!("partial ({n}/{total})"),
+            Self::Stopped           => "stopped".to_string(),
+            Self::Unknown           => "unknown".to_string(),
+        }
+    }
+
+    fn color(&self) -> Color {
+        match self {
+            Self::Running(_)  => Color::Green,
+            Self::Partial(..) => Color::Yellow,
+            Self::Stopped | Self::Unknown => Color::DarkGrey,
+        }
+    }
+}
+
+fn running_status(path: &str) -> RunState {
+    let Ok(output) = Command::new("docker")
+        .args(["compose", "-f", path, "ps", "--format", "{{.State}}"])
+        .output()
+    else {
+        return RunState::Unknown;
     };
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let states: Vec<&str> = stdout.lines().collect();
 
     if states.is_empty() {
-        return ("stopped".to_string(), Color::DarkGrey);
+        return RunState::Stopped;
     }
 
     let total = states.len();
     let running = states.iter().filter(|&&s| s == "running").count();
 
     match running {
-        0               => ("stopped".to_string(),            Color::DarkGrey),
-        n if n == total => (format!("running ({n})"),         Color::Green),
-        n               => (format!("partial ({n}/{total})"), Color::Yellow),
+        0               => RunState::Stopped,
+        n if n == total => RunState::Running(n),
+        n               => RunState::Partial(n, total),
     }
 }
 
@@ -295,11 +320,11 @@ fn cmd_list() {
     for handle in handles {
         let (name, path, file_exists, run) = handle.join().unwrap();
         let (file_cell, path_cell, run_cell) = if file_exists {
-            let (label, color) = run.unwrap();
+            let state = run.unwrap();
             (
                 Cell::new("ok").fg(Color::Green),
                 Cell::new(&path),
-                Cell::new(label).fg(color),
+                Cell::new(state.label()).fg(state.color()),
             )
         } else {
             (
