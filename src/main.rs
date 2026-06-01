@@ -69,6 +69,15 @@ enum Cmd {
         /// Name of the project
         name: String,
     },
+
+    /// Rename a saved project
+    #[command(alias = "mv")]
+    Rename {
+        /// Current name
+        old: String,
+        /// New name
+        new: String,
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -362,6 +371,28 @@ fn cmd_status(name: &str) {
     println!("{table}");
 }
 
+fn cmd_rename(old: &str, new: &str) {
+    validate_name(old);
+    validate_name(new);
+
+    let mut projects = load_projects();
+
+    if !projects.contains_key(old) {
+        eprintln!("{} no project named '{}'", "error:".red().bold(), old.cyan());
+        exit(1);
+    }
+
+    if projects.contains_key(new) {
+        eprintln!("{} a project named '{}' already exists", "error:".red().bold(), new.cyan());
+        exit(1);
+    }
+
+    let path = projects.remove(old).unwrap();
+    projects.insert(new.to_string(), path);
+    save_projects(&projects);
+    println!("{} {} → {}", "renamed:".green().bold(), old.cyan(), new.cyan());
+}
+
 fn run_compose(name: &str, subcommand: &str, extra: &[String]) {
     validate_name(name);
     let projects = load_projects();
@@ -412,5 +443,6 @@ fn main() {
         Cmd::Down { name, extra } => run_compose(&name, "down", &extra),
         Cmd::Run { name, subcommand, extra } => run_compose(&name, &subcommand, &extra),
         Cmd::Status { name } => cmd_status(&name),
+        Cmd::Rename { old, new } => cmd_rename(&old, &new),
     }
 }
