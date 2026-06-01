@@ -32,8 +32,6 @@ dcm up myapp -d                       # extra flags pass through
 dcm down myapp
 ```
 
-![dcm up myapp](assets/dcm_up_myapp.png)
-![dcm down myapp](assets/dcm_down_myapp.png)
 
 **Check status**
 
