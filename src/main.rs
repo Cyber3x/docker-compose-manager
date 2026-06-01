@@ -1,4 +1,5 @@
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
+use clap_complete::{Shell, generate};
 use colored::Colorize;
 use comfy_table::{Attribute, Cell, Color, Table, presets::UTF8_FULL};
 use std::collections::HashMap;
@@ -86,6 +87,13 @@ enum Cmd {
         /// Extra arguments forwarded to `docker compose logs`
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         extra: Vec<String>,
+    },
+
+    /// Print shell completion script
+    #[command(hide = true)]
+    Completions {
+        /// Shell to generate completions for
+        shell: Shell,
     },
 }
 
@@ -457,6 +465,9 @@ fn main() {
             let mut args = vec!["-f".to_string()];
             args.extend(extra);
             run_compose(&name, "logs", &args);
+        },
+        Cmd::Completions { shell } => {
+            generate(shell, &mut Cli::command(), "dcm", &mut io::stdout());
         },
     }
 }
