@@ -281,6 +281,7 @@ fn running_status(path: &str) -> RunState {
 }
 
 fn cmd_list() -> Result<()> {
+    let cfg = config_path()?;
     let projects = load_projects()?;
     if projects.is_empty() {
         println!("no projects saved yet. use {} to add one.", "`dcm add <name> <path>`".cyan());
@@ -337,7 +338,7 @@ fn cmd_list() -> Result<()> {
     }
 
     println!("{table}");
-    println!("{} {}", "config:".dimmed(), config_path()?.display().to_string().dimmed());
+    println!("{} {}", "config:".dimmed(), cfg.display().to_string().dimmed());
     Ok(())
 }
 
