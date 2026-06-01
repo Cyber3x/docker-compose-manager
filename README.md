@@ -5,7 +5,7 @@ Tired of `cd`-ing to the right directory just to run `docker compose up`? `dcm` 
 ## Install
 
 ```sh
-cargo install --git https://github.com/youruser/docker-compose-manager
+cargo install --git https://github.com/Cyber3x/docker-compose-manager
 ```
 
 ## Usage
@@ -45,3 +45,7 @@ dcm completions fish | source         # fish
 ## Config
 
 Projects are stored in `$XDG_CONFIG_HOME/dcm/projects` (default: `~/.config/dcm/projects`).
+
+## License
+
+MIT
