@@ -102,11 +102,16 @@ enum Cmd {
 // ---------------------------------------------------------------------------
 
 fn config_path() -> PathBuf {
-    let home = env::var("HOME").unwrap_or_else(|_| {
-        eprintln!("{} $HOME is not set — cannot locate config directory", "error:".red().bold());
-        exit(1);
-    });
-    Path::new(&home).join(".config").join("dcm").join("projects")
+    let base = if let Ok(xdg) = env::var("XDG_CONFIG_HOME") {
+        PathBuf::from(xdg)
+    } else {
+        let home = env::var("HOME").unwrap_or_else(|_| {
+            eprintln!("{} $HOME is not set — cannot locate config directory", "error:".red().bold());
+            exit(1);
+        });
+        PathBuf::from(home).join(".config")
+    };
+    base.join("dcm").join("projects")
 }
 
 fn load_projects() -> HashMap<String, String> {
