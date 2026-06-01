@@ -220,7 +220,7 @@ fn cmd_remove(name: &str) -> Result<()> {
         save_projects(&projects)?;
         println!("{} {}", "removed:".red().bold(), name.cyan());
     } else {
-        bail!("no project named '{name}'");
+        bail!("no project named '{name}' — run `dcm list` to see saved projects");
     }
     Ok(())
 }
@@ -414,7 +414,7 @@ fn cmd_rename(old: &str, new: &str) -> Result<()> {
     let mut projects = load_projects()?;
 
     if !projects.contains_key(old) {
-        bail!("no project named '{old}'");
+        bail!("no project named '{old}' — run `dcm list` to see saved projects");
     }
     if projects.contains_key(new) {
         bail!("a project named '{new}' already exists");
