@@ -22,12 +22,12 @@ enum Cmd {
     /// Save a project (path to compose file or directory)
     Add { name: String, path: String },
 
-    /// Remove a saved project
-    #[command(alias = "rm")]
+    /// Remove a saved project (use '*' to remove all)
+    #[command(visible_alias = "rm")]
     Remove { name: String },
 
     /// List all saved projects
-    #[command(alias = "ls")]
+    #[command(visible_alias = "ls")]
     List,
 
     /// Run `docker compose up` for a saved project
@@ -53,13 +53,13 @@ enum Cmd {
     },
 
     /// Show running status of a saved project's services
-    #[command(alias = "ps")]
+    #[command(visible_alias = "ps")]
     Status {
         name: String,
     },
 
     /// Rename a saved project
-    #[command(alias = "mv")]
+    #[command(visible_alias = "mv")]
     Rename {
         old: String,
         new: String,

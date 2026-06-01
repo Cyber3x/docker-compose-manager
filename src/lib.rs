@@ -199,6 +199,9 @@ pub fn cmd_add(name: &str, raw_path: &str) -> Result<()> {
 }
 
 pub fn cmd_remove(name: &str) -> Result<()> {
+    if name == "*" {
+        return cmd_remove_all();
+    }
     validate_name(name)?;
     let mut projects = load_projects()?;
     if projects.remove(name).is_some() {
@@ -207,6 +210,37 @@ pub fn cmd_remove(name: &str) -> Result<()> {
     } else {
         bail!("no project named '{name}' — run `dcm list` to see saved projects");
     }
+    Ok(())
+}
+
+fn cmd_remove_all() -> Result<()> {
+    let mut projects = load_projects()?;
+    if projects.is_empty() {
+        println!("no projects saved.");
+        return Ok(());
+    }
+
+    let mut names: Vec<&String> = projects.keys().collect();
+    names.sort();
+
+    println!("This will remove all {} saved project(s):", names.len());
+    for name in &names {
+        println!("  {}", name.cyan());
+    }
+    print!("Remove all? [y/N] ");
+    io::stdout().flush().ok();
+
+    let mut answer = String::new();
+    io::stdin().read_line(&mut answer).ok();
+    if !answer.trim().eq_ignore_ascii_case("y") {
+        println!("{}", "aborted.".dimmed());
+        return Ok(());
+    }
+
+    let count = projects.len();
+    projects.clear();
+    save_projects(&projects)?;
+    println!("{} {count} project(s)", "removed:".red().bold());
     Ok(())
 }
 

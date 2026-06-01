@@ -64,6 +64,7 @@ dcm run myapp ps
 ```sh
 dcm rename myapp myapp-v2             # rename (alias: mv)
 dcm rm myapp                          # remove
+dcm rm '*'                            # remove all (prompts for confirmation)
 ```
 
 **Shell completions**
