@@ -201,29 +201,29 @@ fn cmd_remove(name: &str) {
     }
 }
 
-fn running_status(path: &str) -> Cell {
+fn running_status(path: &str) -> (String, Color) {
     let output = Command::new("docker")
         .args(["compose", "-f", path, "ps", "--format", "{{.State}}"])
         .output();
 
     let Ok(output) = output else {
-        return Cell::new("unknown").fg(Color::DarkGrey);
+        return ("unknown".to_string(), Color::DarkGrey);
     };
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let states: Vec<&str> = stdout.lines().collect();
 
     if states.is_empty() {
-        return Cell::new("stopped").fg(Color::DarkGrey);
+        return ("stopped".to_string(), Color::DarkGrey);
     }
 
     let total = states.len();
     let running = states.iter().filter(|&&s| s == "running").count();
 
     match running {
-        0          => Cell::new("stopped").fg(Color::DarkGrey),
-        n if n == total => Cell::new(format!("running ({n})")).fg(Color::Green),
-        n          => Cell::new(format!("partial ({n}/{total})")).fg(Color::Yellow),
+        0               => ("stopped".to_string(),            Color::DarkGrey),
+        n if n == total => (format!("running ({n})"),         Color::Green),
+        n               => (format!("partial ({n}/{total})"), Color::Yellow),
     }
 }
 
@@ -243,25 +243,42 @@ fn cmd_list() {
         Cell::new("RUNNING").add_attribute(Attribute::Bold).fg(Color::Cyan),
     ]);
 
-    let mut sorted: Vec<_> = projects.iter().collect();
-    sorted.sort_by_key(|(k, _)| k.as_str());
+    let mut sorted: Vec<(String, String)> = projects.into_iter().collect();
+    sorted.sort_by(|(a, _), (b, _)| a.cmp(b));
 
-    for (name, path) in sorted {
-        let (file_cell, path_cell, run_cell) = if Path::new(path).exists() {
+    let handles: Vec<_> = sorted
+        .into_iter()
+        .map(|(name, path)| {
+            std::thread::spawn(move || {
+                let file_exists = Path::new(&path).exists();
+                let run = if file_exists {
+                    Some(running_status(&path))
+                } else {
+                    None
+                };
+                (name, path, file_exists, run)
+            })
+        })
+        .collect();
+
+    for handle in handles {
+        let (name, path, file_exists, run) = handle.join().unwrap();
+        let (file_cell, path_cell, run_cell) = if file_exists {
+            let (label, color) = run.unwrap();
             (
                 Cell::new("ok").fg(Color::Green),
-                Cell::new(path),
-                running_status(path),
+                Cell::new(&path),
+                Cell::new(label).fg(color),
             )
         } else {
             (
                 Cell::new("missing").fg(Color::Red),
-                Cell::new(path).fg(Color::DarkGrey),
+                Cell::new(&path).fg(Color::DarkGrey),
                 Cell::new("-").fg(Color::DarkGrey),
             )
         };
         table.add_row(vec![
-            Cell::new(name).fg(Color::Cyan),
+            Cell::new(&name).fg(Color::Cyan),
             path_cell,
             file_cell,
             run_cell,
